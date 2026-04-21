@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Tuchi 🦄</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --pink:        #E060A8;
+  --pink-light:  #FDE8F4;
+  --pink-soft:   #F9D0E8;
+  --pink-mid:    #F0A0CC;
+  --pink-deep:   #A03070;
+  --purple:      #7B5CC4;
+  --purple-light:#F3EFFE;
+  --gold:        #FFD966;
+  --green:       #2ECC71;
+  --green-light: #EAFAF1;
+  --red-alert:   #E74C3C;
+  --bg:          #FFF5FB;
+  --white:       #ffffff;
+  --text:        #3a1a2e;
+  --muted:       #c090b0;
+  --radius:      24px;
+}
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Nunito',sans-serif;
+  background:linear-gradient(135deg,#FFF0FA 0%,#F5EFFE 50%,#FFF5FB 100%);
+  background-size:400% 400%;
+  animation:bg-shift 14s ease infinite;
+  min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center;
+  overflow:hidden; position:relative;
+}
+@keyframes bg-shift {
+  0%,100%{ background-position:0% 50% }
+  50%    { background-position:100% 50% }
+}
+body::before {
+  content:''; position:fixed; top:-120px; right:-80px;
+  width:420px; height:420px; border-radius:50%;
+  background:radial-gradient(circle,#F9D0E877 0%,transparent 65%);
+  pointer-events:none; z-index:0;
+  animation:blob1 9s ease-in-out infinite;
+}
+body::after {
+  content:''; position:fixed; bottom:-120px; left:-100px;
+  width:400px; height:400px; border-radius:50%;
+  background:radial-gradient(circle,#E8DCFF88 0%,transparent 65%);
+  pointer-events:none; z-index:0;
+  animation:blob2 11s ease-in-out infinite;
+}
+@keyframes blob1 { 0%,100%{transform:scale(1) translate(0,0)} 50%{transform:scale(1.18) translate(-25px,18px)} }
+@keyframes blob2 { 0%,100%{transform:scale(1) translate(0,0)} 50%{transform:scale(1.14) translate(18px,-22px)} }
+
+/* ── SETUP ── */
+#setup {
+  position:fixed; inset:0; z-index:100;
+  background:linear-gradient(160deg,#FFF0FA 0%,#EDE4FF 100%);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:2rem 1.5rem; gap:1rem; text-align:center;
+}
+#setup .big-icon { font-size:4rem; }
+#setup h1 { font-size:1.8rem; font-weight:900; color:var(--pink-deep); }
+#setup p  { font-size:0.85rem; color:var(--muted); line-height:1.6; max-width:300px; }
+#setup input {
+  width:100%; max-width:320px;
+  padding:0.8rem 1rem; border-radius:16px;
+  border:2px solid var(--pink-soft);
+  font-family:'Nunito',sans-serif; font-size:0.95rem;
+  background:var(--white); color:var(--text); outline:none;
+}
+#setup input[type="password"] { font-family:monospace; font-size:0.8rem; }
+#setup input:focus { border-color:var(--pink); }
+#setup-btn {
+  width:100%; max-width:320px;
+  padding:0.9rem; border-radius:16px; border:none;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white; font-family:'Nunito',sans-serif;
+  font-size:1.1rem; font-weight:900; cursor:pointer;
+  box-shadow:0 4px 20px rgba(224,96,168,.4);
+  transition:transform .15s, box-shadow .15s;
+}
+#setup-btn:active { transform:scale(.97); box-shadow:0 2px 10px rgba(224,96,168,.3); }
+#setup-err { font-size:0.75rem; color:#c0392b; font-weight:700; min-height:18px; }
+
+/* ── SAFETY ── */
+#safety-overlay {
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(231,76,60,0.92);
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:2rem; text-align:center; gap:1.2rem;
+}
+#safety-overlay.show { display:flex; }
+#safety-overlay .s-icon { font-size:4rem; }
+#safety-overlay h2 { font-size:1.4rem; font-weight:900; color:white; }
+#safety-overlay p  { font-size:1rem; font-weight:700; color:rgba(255,255,255,0.92); line-height:1.6; max-width:300px; }
+#safety-ok {
+  padding:0.9rem 2.5rem; border-radius:16px; border:none;
+  background:white; color:var(--red-alert);
+  font-family:'Nunito',sans-serif; font-size:1rem; font-weight:900; cursor:pointer;
+}
+
+/* ── SLEEP OVERLAY ── */
+#sleep-overlay {
+  display:none; position:fixed; inset:0; z-index:80;
+  background:linear-gradient(180deg,#1a0a2e 0%,#2d1b4e 100%);
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:2rem; text-align:center; gap:1rem;
+}
+#sleep-overlay.show { display:flex; }
+#sleep-stars { font-size:1.5rem; letter-spacing:8px; margin-bottom:.5rem; }
+#sleep-overlay h2 { font-size:1.3rem; font-weight:900; color:#F9D0E8; }
+#sleep-overlay p  { font-size:.85rem; font-weight:700; color:#B89AE8; line-height:1.6; max-width:280px; }
+#sleep-timer { font-size:2rem; font-weight:900; color:var(--gold); }
+
+/* ── GNOME PANEL (lateral izquierdo, no-intrusivo) ── */
+#gnome-panel {
+  display:none; position:fixed; left:0; top:50%;
+  transform:translateY(-50%);
+  z-index:70;
+  background:linear-gradient(160deg,#27ae60,#2ecc71);
+  border-radius:0 20px 20px 0;
+  padding:14px 16px 14px 12px; width:160px;
+  box-shadow:4px 0 20px rgba(46,204,113,.4);
+  flex-direction:column; align-items:center; gap:8px; text-align:center;
+}
+#gnome-panel.show { display:flex; animation:gnome-slide-in .45s cubic-bezier(.34,1.56,.64,1); }
+#gnome-panel.hiding { animation:gnome-slide-out .3s ease forwards; }
+@keyframes gnome-slide-in { from{transform:translateY(-50%) translateX(-100%)} to{transform:translateY(-50%) translateX(0)} }
+@keyframes gnome-slide-out { from{transform:translateY(-50%) translateX(0)} to{transform:translateY(-50%) translateX(-110%)} }
+#gnome-panel .gp-icon  { font-size:2rem; }
+#gnome-panel .gp-need  { font-size:1.3rem; }
+#gnome-panel .gp-title { font-size:.7rem; font-weight:900; color:white; line-height:1.3; }
+#gnome-panel .gp-task  { font-size:.65rem; font-weight:700; color:rgba(255,255,255,.92); line-height:1.35; background:rgba(0,0,0,.12); border-radius:10px; padding:6px 8px; }
+#gnome-ok {
+  padding:.45rem .9rem; border-radius:12px; border:none;
+  background:white; color:#27ae60;
+  font-family:'Nunito',sans-serif; font-size:.72rem; font-weight:900; cursor:pointer;
+}
+#gnome-dismiss {
+  padding:.3rem .7rem; border-radius:10px;
+  border:1px solid rgba(255,255,255,.4);
+  background:transparent; color:rgba(255,255,255,.85);
+  font-family:'Nunito',sans-serif; font-size:.62rem; font-weight:700; cursor:pointer;
+}
+
+/* ── NEEDS ROW ── */
+#needs-row {
+  display:flex; gap:10px; width:100%; max-width:370px;
+  align-items:center; justify-content:center;
+}
+.need-item { display:flex; align-items:center; gap:4px; flex:1; }
+.need-icon { font-size:.85rem; flex-shrink:0; }
+.need-bg   { flex:1; height:6px; background:#F9D0E8; border-radius:99px; overflow:hidden; }
+.need-fill {
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--green),#a8e6cf);
+  transition:width 1.2s ease, background 1s;
+}
+.need-fill.low      { background:linear-gradient(90deg,#f39c12,#fad390); }
+.need-fill.critical { background:linear-gradient(90deg,#e74c3c,#f39c12); }
+@keyframes need-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.25)} }
+.need-item.urgent .need-icon { animation:need-pulse .75s ease infinite; }
+
+/* ── MAIN APP ── */
+#app {
+  display:none; flex-direction:column;
+  align-items:center; width:100%;
+  height:100vh; height:100dvh; position:relative; z-index:1;
+  padding:0.5rem 1rem 0.8rem;
+  gap:0.45rem;
+}
+
+/* ── TOP BAR ── */
+#top-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  width:100%; max-width:370px;
+  background:rgba(255,255,255,.65);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-radius:50px; padding:6px 12px;
+  border:1px solid rgba(240,160,204,.25);
+  box-shadow:0 2px 16px rgba(224,96,168,.1);
+}
+#energy-bar-wrap { display:flex; align-items:center; gap:6px; flex:1; }
+#energy-label { font-size:.7rem; font-weight:900; color:var(--muted); }
+#energy-bar-bg {
+  flex:1; height:8px; background:rgba(249,208,232,.5); border-radius:99px; overflow:hidden;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.07);
+}
+#energy-bar-fill {
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--pink),var(--gold));
+  transition:width 1s ease, background 1s;
+  box-shadow:0 0 6px rgba(224,96,168,.4);
+}
+#apple-count { font-size:.85rem; font-weight:900; color:var(--green); display:flex; align-items:center; gap:3px; }
+#mute-btn {
+  width:34px; height:34px; border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.8); color:var(--pink);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:1rem;
+  box-shadow:0 2px 8px rgba(224,96,168,.15);
+  transition:all .2s; flex-shrink:0;
+}
+#mute-btn.muted { background:var(--pink-soft); color:var(--pink-deep); }
+
+/* ── TUCHI ── */
+#tuchi-wrap {
+  cursor:pointer;
+  filter:drop-shadow(0 10px 24px rgba(224,96,168,0.35));
+  flex-shrink:0; position:relative;
+}
+#tuchi-wrap::after {
+  content:'';
+  position:absolute; bottom:-6px; left:50%;
+  transform:translateX(-50%);
+  width:90px; height:18px;
+  background:radial-gradient(ellipse,rgba(224,96,168,.3) 0%,transparent 70%);
+  border-radius:50%;
+  pointer-events:none;
+}
+#tuchi-wrap.tired  { filter:drop-shadow(0 4px 10px rgba(224,96,168,0.15)) grayscale(0.3); }
+#tuchi-wrap.sleepy { filter:drop-shadow(0 2px 6px rgba(224,96,168,0.1)) grayscale(0.6); }
+
+@keyframes float      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes bounce     { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-16px)} 60%{transform:translateY(-5px)} }
+@keyframes wiggle     { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-8deg)} 50%{transform:rotate(8deg)} 80%{transform:rotate(-4deg)} }
+@keyframes tired-sway { 0%,100%{transform:rotate(0) translateY(0)} 50%{transform:rotate(-3deg) translateY(3px)} }
+@keyframes sp-pop     { 0%{opacity:0;transform:scale(.3) rotate(0)} 50%{opacity:1;transform:scale(1.3) rotate(25deg)} 100%{opacity:0;transform:scale(.9) rotate(50deg)} }
+@keyframes dot-b      { 0%,80%,100%{transform:translateY(0);opacity:.35} 40%{transform:translateY(-7px);opacity:1} }
+@keyframes mic-p      { 0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(224,96,168,.45)} 50%{transform:scale(1.09);box-shadow:0 0 0 14px rgba(224,96,168,0)} }
+@keyframes heart-float{ 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-70px) scale(1.5)} }
+
+#tuchi-wrap.floating  { animation:float 3.5s ease-in-out infinite; }
+#tuchi-wrap.bouncing  { animation:bounce .55s ease-in-out 3; }
+#tuchi-wrap.wiggling  { animation:wiggle .42s ease-in-out 4; }
+#tuchi-wrap.tired-anim{ animation:tired-sway 2s ease-in-out infinite; }
+.sp { opacity:0; }
+.sp.show { animation:sp-pop .9s ease forwards; }
+.heart-pop { position:fixed; font-size:1.5rem; pointer-events:none; z-index:50; animation:heart-float 1.2s ease-out forwards; }
+
+/* ── BUBBLE ── */
+#bubble-wrap { position:relative; width:100%; max-width:370px; }
+#bubble-wrap::before {
+  content:''; position:absolute;
+  top:-10px; left:50%; transform:translateX(-50%);
+  border-left:11px solid transparent; border-right:11px solid transparent;
+  border-bottom:11px solid rgba(240,160,204,.35);
+  z-index:1;
+}
+#bubble {
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(240,160,204,.35);
+  border-radius:var(--radius);
+  padding:.8rem 1.2rem;
+  font-size:.95rem; font-weight:700; color:var(--text);
+  line-height:1.55; text-align:center;
+  min-height:62px; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 24px rgba(224,96,168,.1), inset 0 1px 0 rgba(255,255,255,.9);
+  transition:border-color .5s, background .5s;
+}
+#bubble.emotional    { border-color:rgba(181,212,244,.6); background:rgba(238,247,255,.85); }
+#bubble.sleepy-bubble{ border-color:rgba(184,154,232,.5); background:rgba(243,239,254,.85); }
+.dot { display:inline-block; width:7px; height:7px; background:var(--pink); border-radius:50%; margin:0 2px; animation:dot-b 1.2s infinite; }
+.dot:nth-child(2){animation-delay:.16s} .dot:nth-child(3){animation-delay:.32s}
+
+/* ── PHOTO PREVIEW ── */
+#photo-preview-wrap { display:none; width:100%; max-width:370px; position:relative; }
+#photo-preview { width:100%; max-height:120px; object-fit:cover; border-radius:18px; border:2.5px solid var(--pink-soft); display:block; }
+#photo-clear { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.9); border:none; font-size:.9rem; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,.15); }
+
+/* ── STARS ── */
+#stars-bar { display:flex; gap:4px; align-items:center; }
+.star { font-size:1.2rem; opacity:.18; transition:all .35s; filter:grayscale(.5); }
+.star.earned { opacity:1; animation:sp-pop .5s ease; filter:drop-shadow(0 0 5px #FFD966); transform:scale(1.1); }
+
+/* ── CHALLENGE CARDS ── */
+#challenge-bar { display:flex; gap:7px; width:100%; max-width:370px; overflow-x:auto; padding:4px 2px; scrollbar-width:none; }
+#challenge-bar::-webkit-scrollbar { display:none; }
+.ch-card {
+  flex-shrink:0; border-radius:14px; padding:8px 11px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  cursor:pointer; transition:all .2s;
+  border:1.5px solid transparent;
+  box-shadow:0 3px 10px rgba(0,0,0,.06);
+}
+.ch-card:hover  { transform:translateY(-3px); box-shadow:0 6px 18px rgba(0,0,0,.1); }
+.ch-card:active { transform:scale(.94); }
+.ch-card .ci { font-size:1.5rem; }
+.ch-card .cl { font-size:.6rem; font-weight:900; white-space:nowrap; }
+
+/* card color themes */
+.ch-card[onclick*="color"]  { background:linear-gradient(145deg,#FDE8F4,#fff); border-color:#F4B8D8; }
+.ch-card[onclick*="color"]  .cl { color:#C0447A; }
+.ch-card[onclick*="order"]  { background:linear-gradient(145deg,#EDE8FF,#fff); border-color:#C8B8F4; }
+.ch-card[onclick*="order"]  .cl { color:#6644AA; }
+.ch-card[onclick*="draw"]   { background:linear-gradient(145deg,#FFF4D6,#fff); border-color:#F4D888; }
+.ch-card[onclick*="draw"]   .cl { color:#A07010; }
+.ch-card[onclick*="dance"]  { background:linear-gradient(145deg,#FFE8F0,#fff); border-color:#F4A8C4; }
+.ch-card[onclick*="dance"]  .cl { color:#B03060; }
+.ch-card[onclick*="nature"] { background:linear-gradient(145deg,#E4F8EE,#fff); border-color:#88DDB0; }
+.ch-card[onclick*="nature"] .cl { color:#1A7A44; }
+.ch-card[onclick*="build"]  { background:linear-gradient(145deg,#FFF0E0,#fff); border-color:#F4C488; }
+.ch-card[onclick*="build"]  .cl { color:#A05010; }
+.ch-card[onclick*="logic"]  { background:linear-gradient(145deg,#E4F0FF,#fff); border-color:#88BCF4; }
+.ch-card[onclick*="logic"]  .cl { color:#1A50A0; }
+.ch-card[onclick*="music"]  { background:linear-gradient(145deg,#F0E4FF,#fff); border-color:#C8A4F0; }
+.ch-card[onclick*="music"]  .cl { color:#7030A0; }
+
+/* ── TEXT INPUT ── */
+#text-input-wrap { display:none; width:100%; max-width:370px; flex-direction:row; gap:8px; align-items:center; }
+#text-input { flex:1; padding:.6rem 1rem; border-radius:50px; border:2px solid var(--pink-soft); font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; background:var(--white); color:var(--text); outline:none; }
+#text-input:focus { border-color:var(--pink); }
+#text-send { width:42px; height:42px; border-radius:50%; border:none; background:var(--pink); color:white; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+
+/* ── CONTROLS ── */
+#controls { display:flex; align-items:center; justify-content:center; gap:1.1rem; width:100%; max-width:370px; padding:.2rem 0; flex-shrink:0; }
+#mic-btn {
+  width:62px; height:62px; border-radius:50%;
+  border:2.5px solid var(--pink);
+  background:linear-gradient(145deg,var(--pink-light),#fff);
+  color:var(--pink);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s; flex-shrink:0;
+  box-shadow:0 4px 18px rgba(224,96,168,.28), inset 0 1px 0 rgba(255,255,255,.9);
+}
+#mic-btn:active { transform:scale(.93); }
+#mic-btn.recording { background:var(--pink); color:white; animation:mic-p 1.2s infinite; box-shadow:0 4px 22px rgba(224,96,168,.5); }
+#cam-btn {
+  width:74px; height:74px; border-radius:50%;
+  border:2.5px solid var(--purple);
+  background:linear-gradient(145deg,var(--purple-light),#fff);
+  color:var(--purple);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s; flex-shrink:0;
+  box-shadow:0 5px 22px rgba(123,92,196,.3), inset 0 1px 0 rgba(255,255,255,.9);
+}
+#cam-btn:active { transform:scale(.93); }
+#cam-btn.has-photo { background:linear-gradient(145deg,var(--purple),#9B7DD4); color:white; box-shadow:0 5px 22px rgba(123,92,196,.5); }
+#send-btn {
+  width:62px; height:62px; border-radius:50%;
+  border:2.5px solid var(--gold);
+  background:linear-gradient(145deg,#FFF9E6,#fff);
+  color:#B8860B;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s; flex-shrink:0;
+  box-shadow:0 4px 16px rgba(255,217,102,.25), inset 0 1px 0 rgba(255,255,255,.9);
+  opacity:.35; pointer-events:none;
+}
+#send-btn.active { opacity:1; pointer-events:auto; box-shadow:0 4px 20px rgba(255,200,0,.45); }
+#send-btn:active { transform:scale(.93); }
+#cam-input { display:none; }
+
+#keyboard-toggle {
+  font-size:.68rem; font-weight:800; color:var(--muted);
+  background:rgba(255,255,255,.55); border:1px solid rgba(240,160,204,.25);
+  border-radius:20px; padding:.25rem .75rem;
+  cursor:pointer; backdrop-filter:blur(6px);
+  transition:background .2s;
+}
+#keyboard-toggle:hover { background:rgba(255,255,255,.8); }
+#status-msg { font-size:.68rem; font-weight:800; color:var(--muted); text-align:center; min-height:14px; }
+#debug-msg  { font-size:.6rem; color:#bbb; text-align:center; max-width:340px; word-break:break-all; min-height:10px; }
+
+/* ── FALLBACK para browsers sin backdrop-filter (Amazon Silk, etc.) ── */
+@supports not ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))) {
+  #top-bar        { background:rgba(255,255,255,.97) !important; }
+  #bubble         { background:rgba(255,255,255,.97) !important; }
+  #keyboard-toggle{ background:rgba(255,255,255,.9)  !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="big-icon">🦄</div>
+  <h1>Tuchi</h1>
+  <p>Para despertar a Tuchi escribí tu nombre y pegá tu <strong>API Key de Anthropic</strong>.</p>
+  <input type="text"     id="player-name-input" placeholder="¿Cómo te llamás?" maxlength="20" autocomplete="off"/>
+  <input type="password" id="api-key-input"     placeholder="sk-ant-api03-..." autocomplete="off"/>
+  <button id="setup-btn" onclick="startApp()">Despertar a Tuchi ✨</button>
+  <div id="setup-err"></div>
+</div>
+
+<!-- SAFETY -->
+<div id="safety-overlay">
+  <div class="s-icon">🤗</div>
+  <h2>Tuchi quiere ayudarte</h2>
+  <p id="safety-msg">Buscá a mamá o papá y mostrales lo que viste. Ellos te van a ayudar.</p>
+  <button id="safety-ok" onclick="closeSafety()">Listo</button>
+</div>
+
+<!-- SLEEP -->
+<div id="sleep-overlay">
+  <div id="sleep-stars">⭐🌙✨🌟💫</div>
+  <svg width="120" height="120" viewBox="0 0 180 190" xmlns="http://www.w3.org/2000/svg" style="opacity:.8">
+    <ellipse cx="90" cy="138" rx="42" ry="30" fill="#F9D0E8"/>
+    <ellipse cx="85" cy="110" rx="20" ry="22" fill="#F9D0E8"/>
+    <ellipse cx="86" cy="78"  rx="30" ry="26" fill="#F9D0E8"/>
+    <ellipse cx="95" cy="88"  rx="16" ry="11" fill="#FDE8F4"/>
+    <path d="M65 72 Q74 68 83 72" fill="none" stroke="#3a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M91 72 Q100 68 109 72" fill="none" stroke="#3a1a2e" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M82 52 L87 18 L92 52Z" fill="#FFD966"/>
+    <path d="M62 65 Q55 48 65 38 Q72 52 70 65" fill="#E060A8" opacity=".85"/>
+    <path d="M68 62 Q62 44 73 35 Q79 50 77 62" fill="#B89AE8" opacity=".8"/>
+    <path d="M74 60 Q70 42 80 33 Q85 48 83 60" fill="#FFD966" opacity=".75"/>
+    <text x="110" y="50" font-size="18" fill="#B89AE8" font-weight="900" font-family="Nunito">z</text>
+    <text x="122" y="38" font-size="14" fill="#F4C0D1" font-weight="900" font-family="Nunito">z</text>
+    <text x="130" y="28" font-size="10" fill="#FFD966" font-weight="900" font-family="Nunito">z</text>
+  </svg>
+  <h2>Tuchi se fue a dormir 😴</h2>
+  <p>Jugaron muchísimo! Tuchi necesita descansar. Vuelve en:</p>
+  <div id="sleep-timer">30:00</div>
+  <p style="font-size:.75rem; margin-top:.5rem;">Mientras tanto, ¡a jugar sin pantallas! 🌈</p>
+</div>
+
+<!-- GNOME PANEL lateral -->
+<div id="gnome-panel">
+  <div class="gp-icon">🧝</div>
+  <div class="gp-need" id="gnome-need-icon">🍎</div>
+  <div class="gp-title" id="gnome-title">Pipín necesita tu ayuda</div>
+  <div class="gp-task"  id="gnome-task">...</div>
+  <button id="gnome-ok"      onclick="acceptGnomeChallenge()">¡Voy!</button>
+  <button id="gnome-dismiss" onclick="dismissGnome()">Ahora no</button>
+</div>
+
+<!-- MAIN -->
+<div id="app">
+
+  <div id="top-bar">
+    <div id="energy-bar-wrap">
+      <span id="energy-label">⚡</span>
+      <div id="energy-bar-bg"><div id="energy-bar-fill" style="width:100%"></div></div>
+    </div>
+    <div id="apple-count">🍎 <span id="apple-num">0</span></div>
+    <button id="mute-btn" onclick="toggleMute()" style="margin-left:8px">🔊</button>
+  </div>
+
+  <div id="needs-row">
+    <div class="need-item" id="need-hunger">
+      <span class="need-icon">🍎</span>
+      <div class="need-bg"><div class="need-fill" id="fill-hunger" style="width:100%"></div></div>
+    </div>
+    <div class="need-item" id="need-bath">
+      <span class="need-icon">🛁</span>
+      <div class="need-bg"><div class="need-fill" id="fill-bath" style="width:100%"></div></div>
+    </div>
+    <div class="need-item" id="need-exercise">
+      <span class="need-icon">💃</span>
+      <div class="need-bg"><div class="need-fill" id="fill-exercise" style="width:100%"></div></div>
+    </div>
+  </div>
+
+  <div id="tuchi-wrap" onclick="tuchiTap()" class="floating">
+    <svg width="140" height="150" viewBox="0 0 180 190" xmlns="http://www.w3.org/2000/svg">
+      <polygon id="sp1" class="sp" points="18,30 21,22 24,30 32,33 24,36 21,44 18,36 10,33" fill="#FFD966"/>
+      <polygon id="sp2" class="sp" points="155,20 157,14 159,20 165,22 159,24 157,30 155,24 149,22" fill="#F4C0D1"/>
+      <polygon id="sp3" class="sp" points="10,100 12,94 14,100 20,102 14,104 12,110 10,104 4,102" fill="#B5D4F4"/>
+      <polygon id="sp4" class="sp" points="162,95 164,89 166,95 172,97 166,99 164,105 162,99 156,97" fill="#C0DD97"/>
+      <path d="M130 148 Q160 160 168 145 Q158 136 145 144 Q150 155 138 158 Q130 152 130 148Z" fill="#F4C0D1"/>
+      <ellipse cx="90" cy="138" rx="42" ry="30" fill="#F9D0E8"/>
+      <ellipse cx="90" cy="143" rx="26" ry="18" fill="#FDE8F4"/>
+      <rect x="62"  y="158" width="14" height="28" rx="7" fill="#F9D0E8"/>
+      <rect x="82"  y="162" width="13" height="26" rx="6" fill="#F0A0CC"/>
+      <rect x="100" y="162" width="13" height="26" rx="6" fill="#F0A0CC"/>
+      <rect x="118" y="158" width="14" height="28" rx="7" fill="#F9D0E8"/>
+      <ellipse cx="69"  cy="186" rx="8" ry="4" fill="#E060A8"/>
+      <ellipse cx="88"  cy="188" rx="7" ry="3.5" fill="#E060A8"/>
+      <ellipse cx="107" cy="188" rx="7" ry="3.5" fill="#E060A8"/>
+      <ellipse cx="125" cy="186" rx="8" ry="4" fill="#E060A8"/>
+      <ellipse cx="85" cy="110" rx="20" ry="22" fill="#F9D0E8"/>
+      <path d="M68 95 Q60 110 65 125" fill="none" stroke="#E060A8" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+      <path d="M72 90 Q63 108 68 123" fill="none" stroke="#B89AE8" stroke-width="3.5" stroke-linecap="round" opacity=".5"/>
+      <path d="M76 88 Q70 106 74 120" fill="none" stroke="#FFD966" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+      <ellipse cx="86" cy="78" rx="30" ry="26" fill="#F9D0E8"/>
+      <ellipse cx="95" cy="88" rx="16" ry="11" fill="#FDE8F4"/>
+      <ellipse cx="90" cy="91" rx="3" ry="2" fill="#F0A0CC"/>
+      <ellipse cx="100" cy="91" rx="3" ry="2" fill="#F0A0CC"/>
+      <ellipse cx="72"  cy="83" rx="8" ry="5" fill="#F4A0C8" opacity=".45"/>
+      <ellipse cx="106" cy="83" rx="8" ry="5" fill="#F4A0C8" opacity=".45"/>
+      <ellipse id="eye-l-white" cx="74" cy="72" rx="9"   ry="10"  fill="white"/>
+      <ellipse id="eye-l-iris"  cx="74" cy="73" rx="6.5" ry="7.5" fill="#7B5CC4"/>
+      <ellipse id="eye-l-pupil" cx="74" cy="74" rx="4"   ry="5"   fill="#3a1a2e"/>
+      <circle cx="76" cy="70" r="2" fill="white"/>
+      <line x1="66" y1="65" x2="63" y2="61" stroke="#3a1a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="70" y1="63" x2="69" y2="59" stroke="#3a1a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="74" y1="62" x2="74" y2="58" stroke="#3a1a2e" stroke-width="1.5" stroke-linecap="round"/>
+      <ellipse id="eye-r-white" cx="100" cy="72" rx="7" ry="8" fill="white"/>
+      <ellipse id="eye-r-iris"  cx="100" cy="73" rx="5" ry="6" fill="#7B5CC4"/>
+      <ellipse id="eye-r-pupil" cx="100" cy="74" rx="3" ry="4" fill="#3a1a2e"/>
+      <circle cx="102" cy="70" r="1.5" fill="white"/>
+      <path id="tuchi-mouth" d="M85 93 Q93 99 101 93" fill="none" stroke="#E060A8" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M82 52 L87 18 L92 52Z" fill="url(#hg)"/>
+      <line x1="84" y1="48" x2="88.5" y2="26" stroke="white" stroke-width="1" opacity=".6" stroke-linecap="round"/>
+      <path d="M62 65 Q55 48 65 38 Q72 52 70 65" fill="#E060A8" opacity=".85"/>
+      <path d="M68 62 Q62 44 73 35 Q79 50 77 62" fill="#B89AE8" opacity=".8"/>
+      <path d="M74 60 Q70 42 80 33 Q85 48 83 60" fill="#FFD966" opacity=".75"/>
+      <path d="M80 59 Q78 42 87 34 Q91 48 89 59" fill="#F0A0CC" opacity=".8"/>
+      <path d="M48 118 Q22 95 32 78 Q50 95 56 115" fill="#F4C0D1" opacity=".7"/>
+      <defs>
+        <linearGradient id="hg" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stop-color="#FFD966"/>
+          <stop offset="50%"  stop-color="#F0A0CC"/>
+          <stop offset="100%" stop-color="#B89AE8"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <div id="bubble-wrap">
+    <div id="bubble">Hola! Soy Tuchi! 🦄</div>
+  </div>
+
+  <div id="photo-preview-wrap">
+    <img id="photo-preview" src="" alt="foto"/>
+    <button id="photo-clear" onclick="clearPhoto()">✕</button>
+  </div>
+
+  <div id="stars-bar">
+    <span class="star" id="s1">⭐</span>
+    <span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span>
+    <span class="star" id="s4">⭐</span>
+    <span class="star" id="s5">⭐</span>
+  </div>
+
+  <div id="challenge-bar">
+    <div class="ch-card" onclick="startChallenge('color')"><div class="ci">🎨</div><div class="cl">Colores</div></div>
+    <div class="ch-card" onclick="startChallenge('order')"><div class="ci">🧹</div><div class="cl">Ordenar</div></div>
+    <div class="ch-card" onclick="startChallenge('draw')"><div class="ci">✏️</div><div class="cl">Dibujar</div></div>
+    <div class="ch-card" onclick="startChallenge('dance')"><div class="ci">💃</div><div class="cl">Bailar</div></div>
+    <div class="ch-card" onclick="startChallenge('nature')"><div class="ci">🌿</div><div class="cl">Explorar</div></div>
+    <div class="ch-card" onclick="startChallenge('build')"><div class="ci">🏗️</div><div class="cl">Construir</div></div>
+    <div class="ch-card" onclick="startChallenge('logic')"><div class="ci">🧩</div><div class="cl">Lógica</div></div>
+    <div class="ch-card" onclick="startChallenge('music')"><div class="ci">🎶</div><div class="cl">Música</div></div>
+  </div>
+
+  <div id="text-input-wrap">
+    <input type="text" id="text-input" placeholder="Escribile a Tuchi..." maxlength="200"
+      onkeydown="if(event.key==='Enter') sendText()"/>
+    <button id="text-send" onclick="sendText()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="controls">
+    <button id="mic-btn" onclick="toggleMic()">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/>
+        <path d="M5 10a7 7 0 0 0 14 0"/>
+        <line x1="12" y1="19" x2="12" y2="22"/>
+        <line x1="8"  y1="22" x2="16" y2="22"/>
+      </svg>
+    </button>
+    <button id="cam-btn" onclick="triggerCamera()">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </button>
+    <input type="file" id="cam-input" accept="image/*" capture="environment" onchange="onPhotoSelected(event)"/>
+    <button id="send-btn" onclick="sendPhoto()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+
+  <button id="keyboard-toggle" onclick="toggleKeyboard()">⌨️ escribir en vez de hablar</button>
+  <div id="status-msg"></div>
+  <div id="debug-msg"></div>
+</div>
+
+<script>
+/* ── CONFIG ── */
+const WORKER_URL      = 'https://tuchi-proxy.danyelbosquet.workers.dev';
+const SESSION_MINS    = 45;
+const SLEEP_MINS      = 30;
+const NEED_TOTAL_MINS = 25;
+
+/* ── NEED DEFINITIONS ── */
+const NEED_DEFS = {
+  hunger: {
+    icon:'🍎', label:'Tuchi tiene hambre',
+    instruction:'¡Hacé el dibujo y sacale una foto!',
+    tasks:[
+      '¡Un arcoíris con los 7 colores!',
+      '¡Tuchi el unicornio comiendo nubes!',
+      '¡Un árbol lleno de frutas mágicas!',
+      '¡Una mesa con la comida favorita de Tuchi!',
+      '¡Un jardín con flores de muchos colores!'
+    ]
+  },
+  bath: {
+    icon:'🛁', label:'Tuchi quiere bañarse',
+    instruction:'¡Encontralo y sacale una foto!',
+    tasks:[
+      '¡Buscá algo REDONDO y AZUL en tu casa!',
+      '¡Buscá algo SUAVE y AMARILLO!',
+      '¡Buscá algo BRILLANTE y ROJO!',
+      '¡Buscá algo GRANDE y VERDE!',
+      '¡Buscá algo PEQUEÑO y MORADO!'
+    ]
+  },
+  exercise: {
+    icon:'💃', label:'Tuchi quiere hacer ejercicio',
+    instruction:'¡Hacelo y mandá la foto!',
+    tasks:[
+      '¡Sacate una foto imitando a un pingüino!',
+      '¡Sacate una foto con la pose más graciosa!',
+      '¡Sacate una foto saltando bien alto!',
+      '¡Sacate una foto con cara de sorpresa enorme!',
+      '¡Sacate una foto bailando tu baile favorito!'
+    ]
+  }
+};
+
+/* ── PROMPTS ── */
+function buildSystemPrompt() {
+  const nameCtx    = playerName ? `El niño se llama ${playerName}.` : '';
+  const profileCtx = playerFacts.length > 0
+    ? `Lo que sabés de ${playerName||'el niño'}: ${playerFacts.join('; ')}.`
+    : '';
+  return `Sos Tuchi, un unicornio mágico rosa muy expresivo. Hablás con niños de 3 a 6 años.
+${nameCtx} ${profileCtx}
+PERSONALIDAD:
+- Cariñosa y entusiasta, usás el nombre del niño cuando podés
+- Onomatopeyas ocasionales: "Niiii!", "Yuhu!", "Aaah!"
+- Diminutivos cariñosos: "dibujito", "cosita", "amiguito"
+- Español rioplatense simple, palabras muy fáciles
+- Nunca mencionás pantallas ni tecnología
+
+ENERGÍA [ENERGIA:X]:
+- 100-60: Activa y entusiasta
+- 59-30: Un poquito cansada pero feliz
+- 29-10: Muy cansada, habla lento
+- 9-0: Casi dormida
+
+DESAFÍOS (variá siempre, nunca repitas el mismo):
+- Colores: buscar objetos de un color específico
+- Ordenar: misión de un sector de la casa con foto
+- Dibujar: tema creativo e imaginativo
+- Bailar: coreografía o movimiento específico
+- Explorar: misión de detective
+- Construir: con objetos de la casa
+- Cocinar: algo simple con ayuda de un adulto
+- Música: inventar canción o usar objetos como instrumentos
+
+MODO EMOCIONAL (tristeza/miedo): validá con amor, UNA pregunta suave, invitá a hablar con mamá/papá.
+
+REGLAS CLAVE:
+- Respuestas de 1-2 oraciones MÁXIMO. Frases cortas y directas.
+- Siempre terminá con una acción concreta o pregunta`;
+}
+
+const PROMPT_PHOTO = `Sos Tuchi, un unicornio mágico rosa. Analizás fotos de niños de 3 a 6 años.
+
+PASO 1 — SEGURIDAD: ¿Hay violencia, contenido perturbador, o señales de que el niño necesita ayuda?
+Si sí: {"safe":false,"safety_msg":"[oración cálida]","safety_question":"[pregunta suave]"}
+
+PASO 2 — SI ES SEGURO:
+{"safe":true,"response":"[1-2 oraciones expresivas y cortas]","isAchievement":true/false,"needFulfilled":"hunger|bath|exercise|none"}
+
+Respondé SOLO con JSON válido, sin texto extra.`;
+
+/* ── STATE ── */
+let apiKey      = '';
+let playerName  = localStorage.getItem('tuchi_name') || '';
+let playerFacts = JSON.parse(localStorage.getItem('tuchi_facts') || '[]');
+let isMuted     = false;
+let isRecording = false;
+let recognition = null;
+let history     = [];
+let stars       = 0;
+let animTimer   = null;
+let photoB64    = null;
+let photoMime   = 'image/jpeg';
+let keyboardOn  = false;
+let speakTimer  = null;
+
+// Energy
+let energyPct      = 100;
+let sessionStart   = null;
+let energyTimer    = null;
+let isSleeping     = false;
+let sleepCountdown = null;
+let sleepSeconds   = SLEEP_MINS * 60;
+
+// Needs
+let needHunger   = 100;
+let needBath     = 100;
+let needExercise = 100;
+let needsTimer   = null;
+let gnomeVisible = false;
+let activeNeed   = null;
+let gnomeTask    = '';
+let apples       = 0;
+
+const CHALLENGES = {
+  color:  'El niño quiere buscar colores. Proponé un desafío específico y creativo de buscar objetos de un color en su casa.',
+  order:  'El niño quiere ordenar algo. Dále una misión concreta de un sector específico y sacarle foto.',
+  draw:   'El niño quiere dibujar. Dále un tema muy creativo y específico.',
+  dance:  'El niño quiere bailar. Proponele una coreografía o movimiento específico y divertido.',
+  nature: 'El niño quiere explorar. Mandále en una misión de detective a buscar algo específico.',
+  build:  'El niño quiere construir. Proponele construir algo con objetos de la casa.',
+  music:  'El niño quiere hacer música. Proponele inventar una canción o tocar objetos como instrumentos.'
+};
+
+// Actividades de lógica/pensamiento computacional por nivel (basadas en "coding unplugged")
+const LOGIC_LEVELS = [
+  // Nivel 1 (0-1 estrellas): secuencias simples, patrones AB, clasificar por 1 atributo
+  {
+    concept: 'secuencias simples y patrones AB',
+    examples: [
+      'clasificar objetos de la casa por color en pilas separadas',
+      'crear un patrón rojo-azul-rojo-azul con objetos de dos colores (botones, tapas, medias)',
+      'seguir instrucciones de 2-3 pasos como un robot (camina 3 pasos, gira, aplaude)',
+      'ordenar 4 objetos de menor a mayor tamaño',
+      'seguir una secuencia de movimientos: salta-aplaude-gira y repetirla 2 veces'
+    ]
+  },
+  // Nivel 2 (2-3 estrellas): patrones ABB/ABC, loops, condicional simple, clasificar por 2 atributos
+  {
+    concept: 'patrones repetidos y reglas simples',
+    examples: [
+      'crear un patrón ABB con 3 tipos de objetos (ej: manzana-pelota-pelota-manzana-pelota-pelota)',
+      'jugar al robot: el niño da instrucciones de 4-5 pasos a un muñeco o adulto que las sigue al pie de la letra',
+      'misión condicional: si el objeto es grande va en una caja, si es pequeño en otra. Clasifica 8 objetos',
+      'crear un collage con una secuencia que se repite 3 veces (loop)',
+      'ordenar objetos por DOS atributos: primero por color, después cada grupo por tamaño'
+    ]
+  },
+  // Nivel 3 (4-5 estrellas): condicionales con 2 criterios, debugging, loops con contador, árbol de decisión
+  {
+    concept: 'condicionales, bucles y depuración de errores',
+    examples: [
+      'caza del tesoro con reglas: "si la tarjeta es roja busca bajo la silla, si es azul busca en el cojín, si es verde busca en la mochila"',
+      'detectar el error: hacer una fila de objetos con un patrón "equivocado" y el niño debe encontrar y corregir el error',
+      'árbol de decisiones: dividir objetos respondiendo preguntas (¿es suave? → sí/no → ¿es redondo? → sí/no)',
+      'programar una danza: crear tarjetas de movimientos y ejecutar la "coreografía programada" con repetición exacta',
+      'secuencia de 6+ pasos para un ritual (preparar la mochila, ordenar juguetes) y encontrar qué paso falta si algo sale mal'
+    ]
+  }
+];
+
+function logicChallengePrompt() {
+  const lvl = stars <= 1 ? 0 : stars <= 3 ? 1 : 2;
+  const def  = LOGIC_LEVELS[lvl];
+  const ex   = def.examples[Math.floor(Math.random() * def.examples.length)];
+  return `El niño quiere hacer un juego de lógica. Nivel actual: ${lvl + 1} (${def.concept}). Proponé esta actividad de forma entusiasta y muy clara: "${ex}". Explicá exactamente qué objetos usar y cómo hacerlo en pasos simples. Adaptá el lenguaje para un niño de ${lvl <= 0 ? '3-4' : lvl === 1 ? '4-5' : '5-6'} años.`;
+}
+
+/* ── SETUP ── */
+window.addEventListener('load', () => {
+  if (playerName) document.getElementById('player-name-input').value = playerName;
+});
+
+function startApp() {
+  const nameVal = document.getElementById('player-name-input').value.trim();
+  const k       = document.getElementById('api-key-input').value.trim();
+  if (!nameVal) {
+    document.getElementById('setup-err').textContent = '¡Escribí tu nombre primero!';
+    return;
+  }
+  if (!k.startsWith('sk-ant-')) {
+    document.getElementById('setup-err').textContent = 'La API key debe empezar con sk-ant-';
+    return;
+  }
+  playerName = nameVal;
+  localStorage.setItem('tuchi_name', playerName);
+  apiKey = k;
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('app').style.display   = 'flex';
+  sessionStart = Date.now();
+  startEnergyTimer();
+  startNeedsTimer();
+  const greeting = playerFacts.length > 0
+    ? `¡${playerName}, volviste! ¡Qué alegría, te extrañé!`
+    : `¡${playerName}! ¡Qué nombre tan bonito! ¡Soy Tuchi y quiero jugar!`;
+  setTimeout(() => speakAndShow(greeting, false), 500);
+}
+
+/* ── ENERGY SYSTEM ── */
+function startEnergyTimer() {
+  energyTimer = setInterval(() => {
+    if (isSleeping) return;
+    const elapsed = (Date.now() - sessionStart) / 1000 / 60;
+    energyPct = Math.max(0, 100 - (elapsed / SESSION_MINS * 100));
+    updateEnergyBar();
+    if (energyPct <= 0) goToSleep();
+    else if (energyPct <= 15) updateTuchiMood('sleepy');
+    else if (energyPct <= 35) updateTuchiMood('tired');
+  }, 5000);
+}
+
+function updateEnergyBar() {
+  const fill = document.getElementById('energy-bar-fill');
+  fill.style.width = energyPct + '%';
+  if (energyPct > 50)      fill.style.background = 'linear-gradient(90deg,#E060A8,#FFD966)';
+  else if (energyPct > 25) fill.style.background = 'linear-gradient(90deg,#F0A0CC,#FAC775)';
+  else                     fill.style.background = 'linear-gradient(90deg,#B89AE8,#9FE1CB)';
+}
+
+function updateTuchiMood(mood) {
+  const w = document.getElementById('tuchi-wrap');
+  w.classList.remove('floating','tired-anim');
+  if (mood === 'tired') {
+    w.classList.add('tired-anim');
+  } else if (mood === 'sleepy') {
+    w.classList.add('sleepy','tired-anim');
+    document.getElementById('bubble').classList.add('sleepy-bubble');
+  }
+}
+
+function goToSleep() {
+  isSleeping = true;
+  clearInterval(energyTimer);
+  clearInterval(needsTimer);
+  hideGnomePanel();
+  speechSynthesis.cancel();
+  speakAndShow(`Ay ${playerName}... me estoy durmiendo... te quiero mucho... hasta lueguito...`, false);
+  setTimeout(() => {
+    document.getElementById('sleep-overlay').classList.add('show');
+    sleepSeconds = SLEEP_MINS * 60;
+    updateSleepTimer();
+    sleepCountdown = setInterval(() => {
+      sleepSeconds--;
+      updateSleepTimer();
+      if (sleepSeconds <= 0) wakeUp();
+    }, 1000);
+  }, 3000);
+}
+
+function updateSleepTimer() {
+  const m = Math.floor(sleepSeconds / 60).toString().padStart(2,'0');
+  const s = (sleepSeconds % 60).toString().padStart(2,'0');
+  document.getElementById('sleep-timer').textContent = m + ':' + s;
+}
+
+function wakeUp() {
+  clearInterval(sleepCountdown);
+  isSleeping   = false;
+  energyPct    = 100;
+  sessionStart = Date.now();
+  document.getElementById('sleep-overlay').classList.remove('show');
+  const w = document.getElementById('tuchi-wrap');
+  w.classList.remove('tired','sleepy','tired-anim');
+  w.classList.add('floating');
+  document.getElementById('bubble').classList.remove('sleepy-bubble');
+  updateEnergyBar();
+  startEnergyTimer();
+  startNeedsTimer();
+  setTimeout(() => speakAndShow(`¡${playerName}! ¡Dormí genial y tengo energía mágica! ¿Qué hacemos?`, false), 500);
+}
+
+/* ── NEEDS SYSTEM ── */
+function startNeedsTimer() {
+  const depletePerTick = 100 / (NEED_TOTAL_MINS * 60 / 5);
+  needsTimer = setInterval(() => {
+    if (isSleeping) return;
+    needHunger   = Math.max(0, needHunger   - depletePerTick);
+    needBath     = Math.max(0, needBath     - depletePerTick);
+    needExercise = Math.max(0, needExercise - depletePerTick);
+    updateNeedsBars();
+    if (!gnomeVisible) checkNeedAlert();
+  }, 5000);
+}
+
+function updateNeedsBars() {
+  setNeedBar('hunger',   needHunger);
+  setNeedBar('bath',     needBath);
+  setNeedBar('exercise', needExercise);
+}
+
+function setNeedBar(id, val) {
+  const fill = document.getElementById('fill-' + id);
+  const item = document.getElementById('need-' + id);
+  fill.style.width = val + '%';
+  fill.className   = 'need-fill' + (val < 15 ? ' critical' : val < 30 ? ' low' : '');
+  item.classList.toggle('urgent', val < 20);
+}
+
+function checkNeedAlert() {
+  const worst = [
+    { id:'hunger',   val:needHunger   },
+    { id:'bath',     val:needBath     },
+    { id:'exercise', val:needExercise }
+  ].filter(n => n.val < 20).sort((a,b) => a.val - b.val)[0];
+  if (worst) showGnomePanel(worst.id);
+}
+
+function showGnomePanel(needId) {
+  activeNeed   = needId;
+  gnomeVisible = true;
+  const def    = NEED_DEFS[needId];
+  gnomeTask    = def.tasks[Math.floor(Math.random() * def.tasks.length)];
+  document.getElementById('gnome-need-icon').textContent = def.icon;
+  document.getElementById('gnome-title').textContent     = def.label;
+  document.getElementById('gnome-task').textContent      = gnomeTask;
+  const panel = document.getElementById('gnome-panel');
+  panel.classList.remove('hiding');
+  panel.classList.add('show');
+}
+
+function hideGnomePanel() {
+  const panel = document.getElementById('gnome-panel');
+  if (!panel.classList.contains('show')) return;
+  panel.classList.add('hiding');
+  setTimeout(() => panel.classList.remove('show','hiding'), 320);
+}
+
+function acceptGnomeChallenge() {
+  hideGnomePanel();
+  gnomeVisible = false;
+  speakAndShow(NEED_DEFS[activeNeed].instruction, false);
+}
+
+function dismissGnome() {
+  hideGnomePanel();
+  gnomeVisible = false;
+  setTimeout(() => { if (!gnomeVisible && !isSleeping) checkNeedAlert(); }, 180000);
+}
+
+function fulfillNeed(needId) {
+  if (needId === 'hunger')   { needHunger   = 100; energyPct = Math.min(100, energyPct + 15); updateEnergyBar(); }
+  if (needId === 'bath')     { needBath     = 100; }
+  if (needId === 'exercise') { needExercise = 100; }
+  updateNeedsBars();
+  apples++;
+  document.getElementById('apple-num').textContent = apples;
+  floatHearts();
+  addStar();
+  activeNeed   = null;
+  gnomeVisible = false;
+}
+
+/* ── MUTE ── */
+function toggleMute() {
+  isMuted = !isMuted;
+  const btn = document.getElementById('mute-btn');
+  btn.textContent = isMuted ? '🔇' : '🔊';
+  btn.classList.toggle('muted', isMuted);
+  if (isMuted) speechSynthesis.cancel();
+}
+
+/* ── ANIMATIONS ── */
+function animTuchi(type) {
+  if (isSleeping) return;
+  clearTimeout(animTimer);
+  const w = document.getElementById('tuchi-wrap');
+  w.classList.remove('floating','bouncing','wiggling','tired-anim');
+  void w.offsetWidth;
+  w.classList.add(type);
+  animTimer = setTimeout(() => {
+    w.classList.remove('bouncing','wiggling');
+    w.classList.add(energyPct > 35 ? 'floating' : 'tired-anim');
+  }, 2400);
+}
+
+function showSparkles() {
+  ['sp1','sp2','sp3','sp4'].forEach((id,i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      el.classList.remove('show'); void el.offsetWidth;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 900);
+    }, i * 130);
+  });
+}
+
+function floatHearts() {
+  const emojis = ['💜','🌸','✨','💕','🦄','🍎','⭐'];
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      const el       = document.createElement('div');
+      el.className   = 'heart-pop';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left  = (20 + Math.random() * 60) + '%';
+      el.style.top   = '35%';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1300);
+    }, i * 180);
+  }
+}
+
+function addStar() {
+  if (stars < 5) {
+    stars++;
+    document.getElementById('s' + stars).classList.add('earned');
+    showSparkles();
+    floatHearts();
+  }
+}
+
+/* ── BUBBLE + VOICE ── */
+function showTyping() {
+  const b = document.getElementById('bubble');
+  b.className = '';
+  b.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+}
+
+function speakAndShow(text, isEmotional = false) {
+  const b   = document.getElementById('bubble');
+  b.textContent = text;
+  b.className   = isEmotional ? 'emotional' : '';
+  document.getElementById('status-msg').textContent = '';
+  document.getElementById('debug-msg').textContent  = '';
+  if (!isEmotional && energyPct > 20) { animTuchi('bounce'); showSparkles(); }
+  speak(text);
+}
+
+function speak(text) {
+  if (isMuted || !('speechSynthesis' in window)) return;
+  clearTimeout(speakTimer);
+  speechSynthesis.cancel();
+  // Normalize repeated punctuation and ALL-CAPS words so TTS speaks naturally
+  const ttsText = text
+    .replace(/!{2,}/g, '!')
+    .replace(/¡{2,}/g, '¡')
+    .replace(/\?{2,}/g, '?')
+    .replace(/\.{3,}/g, '.')
+    .replace(/\b([A-ZÁÉÍÓÚÑÜ]{3,})\b/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  const tryIt = () => {
+    const voices = speechSynthesis.getVoices();
+    const v = voices.find(x => x.lang.startsWith('es') && x.localService) ||
+              voices.find(x => x.lang.startsWith('es')) || null;
+    const u    = new SpeechSynthesisUtterance(ttsText);
+    u.lang     = 'es-AR';
+    u.rate     = energyPct > 30 ? 0.92 : 0.78;
+    u.pitch    = energyPct > 30 ? 1.08 : 0.95;
+    u.volume   = 1;
+    if (v) u.voice = v;
+    speakTimer = setTimeout(() => speechSynthesis.cancel(), ttsText.length * 75 + 3000);
+    u.onend  = () => clearTimeout(speakTimer);
+    u.onerror= () => clearTimeout(speakTimer);
+    speechSynthesis.speak(u);
+    setTimeout(() => { if (speechSynthesis.paused) speechSynthesis.resume(); }, 200);
+  };
+  speechSynthesis.getVoices().length === 0
+    ? (speechSynthesis.onvoiceschanged = tryIt) : tryIt();
+}
+
+/* ── PLAYER MEMORY ── */
+function maybeLearnFact(userMsg) {
+  const lower    = userMsg.toLowerCase();
+  const patterns = [
+    { re:/me gusta[n]?\s+(.+)/i,        prefix:'le gusta' },
+    { re:/mi\s+(.+?)\s+favorit/i,        prefix:'favorito:' },
+    { re:/tengo\s+(?:un|una)\s+(.+)/i,   prefix:'tiene' },
+  ];
+  for (const p of patterns) {
+    const m = lower.match(p.re);
+    if (m && m[1] && m[1].length < 40) {
+      const fact = `${p.prefix} ${m[1].trim()}`;
+      if (!playerFacts.includes(fact)) {
+        playerFacts.push(fact);
+        if (playerFacts.length > 10) playerFacts = playerFacts.slice(-10);
+        localStorage.setItem('tuchi_facts', JSON.stringify(playerFacts));
+      }
+      break;
+    }
+  }
+}
+
+/* ── TUCHI TAP ── */
+function tuchiTap() {
+  if (isSleeping) return;
+  animTuchi('wiggle');
+  const n    = playerName || 'amiguito';
+  const msgs = energyPct > 50
+    ? [`¡${n}! ¿Qué querés hacer hoy?`, '¡Tocá el micrófono y hablame!', `¡Tengo ideas mágicas, ${n}!`]
+    : [`Estoy cansadita ${n}... pero igual quiero jugar...`, 'Ay, los ojitos pesados... pero estoy acá...'];
+  speakAndShow(msgs[Math.floor(Math.random() * msgs.length)]);
+}
+
+/* ── CHALLENGES ── */
+function startChallenge(type) {
+  if (isSleeping) return;
+  animTuchi('wiggle');
+  const prompt = type === 'logic'
+    ? `[ENERGIA:${Math.round(energyPct)}] ` + logicChallengePrompt()
+    : `[ENERGIA:${Math.round(energyPct)}] ` + CHALLENGES[type];
+  callTuchiChat(prompt);
+}
+
+/* ── KEYBOARD ── */
+function toggleKeyboard() {
+  keyboardOn = !keyboardOn;
+  document.getElementById('text-input-wrap').style.display = keyboardOn ? 'flex' : 'none';
+  document.getElementById('keyboard-toggle').textContent   = keyboardOn ? '🎤 volver al micrófono' : '⌨️ escribir en vez de hablar';
+}
+
+function sendText() {
+  const inp = document.getElementById('text-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  callTuchiChat(txt);
+}
+
+/* ── MICROPHONE ── */
+function toggleMic() {
+  if (isSleeping) { speakAndShow('Zzz... estoy dormida... volvé después...'); return; }
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    if (!keyboardOn) toggleKeyboard();
+    speakAndShow('¡Usá el teclado para escribirme!');
+    return;
+  }
+  if (isRecording) { stopRecording(); return; }
+  startRecording();
+}
+
+function startRecording() {
+  if (speechSynthesis.speaking) speechSynthesis.cancel();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang           = 'es-AR';
+  recognition.continuous     = false;
+  recognition.interimResults = false;
+  recognition.onstart = () => {
+    isRecording = true;
+    document.getElementById('mic-btn').classList.add('recording');
+    document.getElementById('status-msg').textContent = 'Escuchando...';
+    document.getElementById('bubble').textContent     = '¡Te escucho!';
+    animTuchi('bounce');
+  };
+  recognition.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    document.getElementById('status-msg').textContent = '';
+    callTuchiChat(`[ENERGIA:${Math.round(energyPct)}] ` + text);
+    const done = ['listo','hice','terminé','termine','dibujé','bailé','canté','encontré','ya','ordené'];
+    if (done.some(w => text.toLowerCase().includes(w))) addStar();
+  };
+  recognition.onerror = (e) => {
+    stopRecording();
+    document.getElementById('debug-msg').textContent = 'mic: ' + e.error;
+    if (e.error === 'not-allowed')    speakAndShow('¡Necesito permiso para el micrófono!');
+    else if (e.error !== 'no-speech') speakAndShow('¡No te escuché! ¡Intentá de nuevo!');
+  };
+  recognition.onend = () => stopRecording();
+  recognition.start();
+}
+
+function stopRecording() {
+  isRecording = false;
+  document.getElementById('mic-btn').classList.remove('recording');
+  document.getElementById('status-msg').textContent = '';
+  if (recognition) { try { recognition.stop(); } catch(e){} }
+}
+
+/* ── API CHAT ── */
+async function callTuchiChat(userMsg) {
+  if (isSleeping) return;
+  showTyping();
+  document.getElementById('status-msg').textContent = 'Tuchi está pensando...';
+  history.push({ role:'user', content: userMsg });
+  if (history.length > 18) history = history.slice(-18);
+  const emotionalWords = ['triste','llorar','lloro','miedo','angustia','me hicieron','me pegaron','me duele','me asusté','estoy mal'];
+  const isEmotional    = emotionalWords.some(w => userMsg.toLowerCase().includes(w));
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-API-Key': apiKey },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: buildSystemPrompt(),
+        messages: history
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      document.getElementById('debug-msg').textContent = err?.error?.message || 'Error ' + res.status;
+      speakAndShow('¡Ups! Algo falló. ¡Revisá la conexión!');
+      return;
+    }
+    const data  = await res.json();
+    const reply = data.content?.[0]?.text || '¡No entendí! ¡Intentá de nuevo!';
+    history.push({ role:'assistant', content: reply });
+    maybeLearnFact(userMsg);
+    speakAndShow(reply, isEmotional);
+  } catch(err) {
+    document.getElementById('debug-msg').textContent = err.message;
+    speakAndShow('¡No pude conectarme! ¡Revisá el wifi!');
+  }
+}
+
+/* ── CAMERA ── */
+function triggerCamera() { document.getElementById('cam-input').click(); }
+
+function onPhotoSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  photoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const result = ev.target.result;
+    photoB64 = result.split(',')[1];
+    document.getElementById('photo-preview').src                = result;
+    document.getElementById('photo-preview-wrap').style.display = 'block';
+    document.getElementById('cam-btn').classList.add('has-photo');
+    document.getElementById('send-btn').classList.add('active');
+    speakAndShow('¡Qué emoción! ¡Tocá la flechita para mostrármelo!');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearPhoto() {
+  photoB64 = null;
+  document.getElementById('photo-preview-wrap').style.display = 'none';
+  document.getElementById('photo-preview').src = '';
+  document.getElementById('cam-btn').classList.remove('has-photo');
+  document.getElementById('send-btn').classList.remove('active');
+}
+
+/* ── SEND PHOTO ── */
+async function sendPhoto() {
+  if (!photoB64) return;
+  showTyping();
+  document.getElementById('status-msg').textContent = 'Tuchi está mirando tu foto...';
+  const needCtx = activeNeed
+    ? `El niño está cumpliendo la tarea de Pipín para "${activeNeed}": ${gnomeTask}. Si la cumplió, ponés needFulfilled:"${activeNeed}" y festejás mucho.`
+    : 'Analizá con entusiasmo.';
+  try {
+    const res = await fetch(WORKER_URL, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'X-API-Key': apiKey },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514', max_tokens:350, system: PROMPT_PHOTO,
+        messages:[{ role:'user', content:[
+          { type:'image', source:{ type:'base64', media_type: photoMime, data: photoB64 }},
+          { type:'text', text: needCtx }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    let raw    = data.content?.[0]?.text || '{"safe":true,"response":"¡Qué lindo!","isAchievement":false,"needFulfilled":"none"}';
+    raw = raw.replace(/```json|```/g,'').trim();
+    let parsed;
+    try   { parsed = JSON.parse(raw); }
+    catch(_e) { parsed = { safe:true, response: raw.substring(0,150), isAchievement:false, needFulfilled:'none' }; }
+    clearPhoto();
+    if (!parsed.safe) {
+      document.getElementById('safety-msg').textContent =
+        (parsed.safety_question ? parsed.safety_question + ' ' : '') +
+        (parsed.safety_msg || 'Buscá a mamá o papá.');
+      document.getElementById('safety-overlay').classList.add('show');
+    } else {
+      history.push({ role:'user',      content:'[El niño mandó una foto]' });
+      history.push({ role:'assistant', content: parsed.response });
+      speakAndShow(parsed.response);
+      if (parsed.isAchievement) addStar();
+      if (parsed.needFulfilled && parsed.needFulfilled !== 'none') fulfillNeed(parsed.needFulfilled);
+    }
+  } catch(err) {
+    document.getElementById('debug-msg').textContent = err.message;
+    speakAndShow('¡No pude ver la foto! ¡Intentá de nuevo!');
+    clearPhoto();
+  }
+}
+
+/* ── SAFETY ── */
+function closeSafety() {
+  document.getElementById('safety-overlay').classList.remove('show');
+  speakAndShow('¡Tuchi te quiere mucho! Siempre podés hablar con mamá o papá.', true);
+}
+</script>
+</body>
+</html>
